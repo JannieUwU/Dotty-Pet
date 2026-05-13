@@ -1,0 +1,83 @@
+# ── Node / Frontend ───────────────────────────────────────────────────────────
+node_modules/
+frontend/dist/
+frontend/electron-dist/
+frontend/release/
+
+# ── Python / Backend ──────────────────────────────────────────────────────────
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+
+# ── Environment & secrets ─────────────────────────────────────────────────────
+.env
+.env.*
+*.env
+
+# ── Database & user data ──────────────────────────────────────────────────────
+# Match dotty.db wherever it lives (project root data/ or backend/data/)
+**/data/dotty.db
+**/data/dotty.db-shm
+**/data/dotty.db-wal
+**/data/resources/
+
+# ── Unity compiled build ───────────────────────────────────────────────────────
+unity-build/
+
+# ── Electron build output ─────────────────────────────────────────────────────
+release/
+out/
+
+# ── Unity build artifacts ─────────────────────────────────────────────────────
+unity/Library/
+unity/Temp/
+unity/Obj/
+unity/Builds/
+unity/Logs/
+unity/UserSettings/
+unity/.vs/
+unity/*.csproj
+unity/*.sln
+
+# Unity build output at project root (legacy)
+/DottyPet.exe
+/DottyPet_Data/
+/MonoBleedingEdge/
+/UnityPlayer.dll
+/UnityCrashHandler64.exe
+/DottyPet_BurstDebugInformation_DoNotShip/
+/D3D12/
+/steam_api64.dll
+/steam_appid.txt
+
+# ── Logs ──────────────────────────────────────────────────────────────────────
+*.log
+logs/
+
+# ── OS ────────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Editor ────────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ── Scripts de données de test ────────────────────────────────────────────────
+seed_events.py
+
+# ── Unity (nested git repo — include source but skip its .git) ────────────────
+unity/.git/
+
+# ── Kiro / Claude AI session data ─────────────────────────────────────────────
+.claude/
+.kiro/
+**/.claude/
+**/.kiro/

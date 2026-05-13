@@ -1,0 +1,18 @@
+{
+  "name": "dotty-pet",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently -n BACKEND,FRONTEND -c yellow,cyan \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:frontend": "npm run dev --prefix frontend",
+    "dev:backend": "cmd /d /c \"cd /d backend && .venv\\Scripts\\python.exe main.py\"",
+    "install:frontend": "npm install --prefix frontend",
+    "install:backend": "cd backend && python setup.py",
+    "install:all": "npm run install:frontend && npm run install:backend",
+    "build": "npm run build --prefix frontend",
+    "dist": "npm run dist --prefix frontend"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}

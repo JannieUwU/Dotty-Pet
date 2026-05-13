@@ -1,0 +1,139 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Theme tokens ─────────────────────────────────────────────────────────────
+   All UI colors are defined here as CSS variables.
+   Components reference var(--c-*) instead of hardcoded hex values.
+   Switching themes is a single attribute change on <html>.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+:root,
+[data-theme="light"] {
+  /* Backgrounds */
+  --c-bg-app:       #FFFFFF;      /* window / titlebar */
+  --c-bg-sidebar:   #FAFAFA;      /* sidebar */
+  --c-bg-page:      #FCFCFC;      /* page container */
+  --c-bg-card:      #FFFFFF;      /* cards, modals */
+  --c-bg-card-alt:  #FAFAFA;      /* secondary card bg */
+  --c-bg-input:     #FFFFFF;      /* inputs, textareas */
+  --c-bg-hover:     #F4F4F4;      /* hover state */
+  --c-bg-subtle:    #F8F8F8;      /* subtle section bg */
+  --c-bg-muted:     #F0F0F0;      /* muted / disabled bg */
+
+  /* Borders */
+  --c-border:       #E0E0E0;      /* primary border */
+  --c-border-light: #F0F0F0;      /* light divider */
+  --c-border-xlight:#F4F4F4;      /* extra-light divider */
+
+  /* Text */
+  --c-text-primary: #3a3a3a;      /* headings, strong labels */
+  --c-text-base:    #4C4C4C;      /* body text */
+  --c-text-secondary:#666666;     /* secondary text */
+  --c-text-muted:   #888888;      /* muted / placeholder */
+  --c-text-faint:   #ABABAB;      /* very faint labels */
+  --c-text-xfaint:  #C8C8C8;      /* timestamps, hints */
+  --c-text-disabled:#D8D8D8;      /* disabled state */
+
+  /* Accent (unchanged in both themes) */
+  --c-accent:       #83B5B5;
+  --c-accent-tint:  rgba(131,181,181,0.10);
+  --c-accent-ring:  rgba(131,181,181,0.25);
+
+  /* Scrollbar */
+  --c-scrollbar-thumb: #E0E0E0;
+  --c-scrollbar-track: transparent;
+
+  /* Git diff colors */
+  --git-add:     #1a7f37;
+  --git-del:     #cf222e;
+  --git-del-bg:  #fff0f0;
+  --git-warn:    #9a6700;
+  --git-hunk:    #8250df;
+  --git-head:    #0550ae;
+}
+
+[data-theme="dark"] {
+  /* Backgrounds */
+  --c-bg-app:       #1a1a1a;
+  --c-bg-sidebar:   #1e1e1e;
+  --c-bg-page:      #1e1e1e;
+  --c-bg-card:      #252525;
+  --c-bg-card-alt:  #2a2a2a;
+  --c-bg-input:     #2a2a2a;
+  --c-bg-hover:     #333333;
+  --c-bg-subtle:    #222222;
+  --c-bg-muted:     #333333;
+
+  /* Borders */
+  --c-border:       #3a3a3a;
+  --c-border-light: #2e2e2e;
+  --c-border-xlight:#2a2a2a;
+
+  /* Text */
+  --c-text-primary: #e8e8e8;
+  --c-text-base:    #d0d0d0;
+  --c-text-secondary:#a0a0a0;
+  --c-text-muted:   #808080;
+  --c-text-faint:   #606060;
+  --c-text-xfaint:  #505050;
+  --c-text-disabled:#404040;
+
+  /* Accent (same) */
+  --c-accent:       #83B5B5;
+  --c-accent-tint:  rgba(131,181,181,0.12);
+  --c-accent-ring:  rgba(131,181,181,0.20);
+
+  /* Scrollbar */
+  --c-scrollbar-thumb: #3a3a3a;
+  --c-scrollbar-track: transparent;
+
+  /* Git diff colors — slightly softened for dark bg */
+  --git-add:     #3fb950;
+  --git-del:     #f85149;
+  --git-del-bg:  rgba(248,81,73,0.10);
+  --git-warn:    #d29922;
+  --git-hunk:    #bc8cff;
+  --git-head:    #58a6ff;
+}
+
+/* ── Base reset ───────────────────────────────────────────────────────────── */
+
+* {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: 'Inter', sans-serif;
+  background: var(--c-bg-app);
+  color: var(--c-text-base);
+  transition: background 0.25s ease, color 0.25s ease;
+}
+
+/* ── Scrollbar styling ────────────────────────────────────────────────────── */
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: var(--c-scrollbar-track); }
+::-webkit-scrollbar-thumb { background: var(--c-scrollbar-thumb); border-radius: 2px; }
+
+/* ── Form elements ────────────────────────────────────────────────────────── */
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+input[type=number] { -moz-appearance: textfield; }
+
+/* ── Animations ───────────────────────────────────────────────────────────── */
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
