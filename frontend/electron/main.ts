@@ -795,6 +795,13 @@ function createWindow() {
     isLaunchingMainApp = false
     mainWindow?.show()
   })
+  // Fallback: if ready-to-show never fires (e.g. renderer hangs), force-show after 5 s
+  setTimeout(() => {
+    if (mainWindow && !mainWindow.isDestroyed() && !mainWindow.isVisible()) {
+      isLaunchingMainApp = false
+      mainWindow.show()
+    }
+  }, 5000)
   mainWindow.on('closed', () => {
     mainWindow = null
     // Main window is the app's primary window — quit when it closes
@@ -1093,6 +1100,12 @@ function createLoginWindow() {
   }
 
   loginWindow.once('ready-to-show', () => loginWindow?.show())
+  // Fallback: force-show after 5 s if ready-to-show never fires
+  setTimeout(() => {
+    if (loginWindow && !loginWindow.isDestroyed() && !loginWindow.isVisible()) {
+      loginWindow.show()
+    }
+  }, 5000)
 
   // Closing the login window = quit, UNLESS we're in the middle of launching the main app.
   loginWindow.on('close', () => {
