@@ -14,6 +14,23 @@ let isQuitting = false
 
 const execFileAsync = promisify(execFile)
 
+// Cache the resolved git executable path so we can call execFile without
+// shell: true (which would re-introduce shell injection risk on Windows).
+let _gitPath: string | null = null
+const findGit = async (): Promise<string> => {
+  if (_gitPath) return _gitPath
+  try {
+    const cmd = process.platform === 'win32' ? 'where' : 'which'
+    const { stdout } = await execFileAsync(cmd, ['git'], { encoding: 'utf8' })
+    _gitPath = stdout.split(/\r?\n/).find(Boolean)!.trim()
+    return _gitPath
+  } catch {
+    // Fall back to bare 'git' and let the OS resolve it
+    _gitPath = 'git'
+    return _gitPath
+  }
+}
+
 type GitFileState = 'staged' | 'modified' | 'untracked' | 'deleted' | 'renamed' | 'conflicted'
 interface GitChangedFile { path: string; state: GitFileState; indexStatus: string; workingTreeStatus: string }
 interface GitRepoSummary { repoPath: string; repoName: string; branch: string; isDirty: boolean; ahead: number; behind: number; stagedCount: number; modifiedCount: number; untrackedCount: number; lastCommitMessage: string; lastCommitAuthor: string; lastCommitAt: string; scannedAt: string; files: GitChangedFile[] }
@@ -27,8 +44,8 @@ const getGitErrorMessage = (error: unknown) => {
 
 const runGit = async (args: string[], cwd: string, allowedExitCodes: number[] = [0]) => {
   try {
-    // shell: true ensures git is found on Windows even when not in Electron's PATH
-    const { stdout } = await execFileAsync('git', args, { cwd, encoding: 'utf8', shell: true })
+    const gitExe = await findGit()
+    const { stdout } = await execFileAsync(gitExe, args, { cwd, encoding: 'utf8' })
     return stdout
   } catch (error) {
     const e = error as ExecFileException & { code?: number; stdout?: string }
@@ -113,11 +130,7 @@ const getFileDiff = async (repoPath: string, filePath: string): Promise<GitFileD
   return { path: filePath, sections }
 }
 
-const openInVSCode = async (absPath: string) => {
-  try { await execFileAsync('code', ['-g', absPath], { encoding: 'utf8', shell: true }); return } catch {}
-  const normalized = process.platform === 'win32' ? absPath.replace(/\\/g, '/') : absPath
-  await shell.openExternal(`vscode://file/${encodeURI(normalized)}`)
-}
+const openInVSCode = (absPath: string) => openInVSCodeFull(absPath, { gotoFile: true })
 
 // ── Git IPC handlers ───────────────────────────────────────────────────────
 
@@ -156,6 +169,7 @@ ipcMain.handle('git-monitor:commit', async (_e, repoPath: string, message: strin
   ensureGitRepo(repoPath)
   const msg = message.trim()
   if (!msg) throw new Error('Commit message cannot be empty')
+  if (msg.length > 500) throw new Error('Commit message is too long (max 500 characters)')
   // Check if git user config is set; if not, use a fallback so commit doesn't fail
   const userName = (await runGit(['config', 'user.name'], repoPath).catch(() => '')).trim()
   const userEmail = (await runGit(['config', 'user.email'], repoPath).catch(() => '')).trim()
@@ -206,16 +220,32 @@ const openInVSCodeFull = async (absPath: string, options: { gotoFile?: boolean }
 
 const checkVSCodeAvailability = async (): Promise<VSCodeCheckResult> => {
   try {
-    const { stdout } = await execFileAsync('code', ['--version'], { encoding: 'utf8', shell: true })
+    const { stdout } = await execFileAsync('code', ['--version'], { encoding: 'utf8' })
     const version = stdout.split(/\r?\n/).find(Boolean)
     return { available: true, strategy: 'cli', version, message: 'VS Code CLI ready.' }
   } catch {}
   return { available: false, strategy: 'unavailable', message: 'VS Code not found.' }
 }
 
+// Allowed root directories for vscode:open-path and vscode:reveal-path.
+// Paths outside these roots are rejected to prevent arbitrary file disclosure.
+const getAllowedRoots = (): string[] => [
+  path.resolve(__dirname, '../..'),  // project root
+  app.getPath('userData'),           // app data directory
+]
+
+const isPathAllowed = (absolutePath: string): boolean => {
+  const normalised = absolutePath.toLowerCase()
+  return getAllowedRoots().some(root => {
+    const r = root.toLowerCase()
+    return normalised === r || normalised.startsWith(r + path.sep)
+  })
+}
+
 const openPathInVSCode = async (targetPath?: string) => {
   const absolutePath = targetPath ? path.resolve(targetPath) : path.resolve(__dirname, '../..')
   if (!fs.existsSync(absolutePath)) throw new Error('Path does not exist.')
+  if (targetPath && !isPathAllowed(absolutePath)) throw new Error('Access denied: path is outside allowed directories.')
   const item = toVSCodeItem(absolutePath)
   await openInVSCodeFull(absolutePath, { gotoFile: item.type === 'file' })
   return item
@@ -273,6 +303,7 @@ ipcMain.handle('vscode:select-item', async () => selectItemForVSCode())
 ipcMain.handle('vscode:reveal-path', async (_e, targetPath?: string) => {
   const absolutePath = targetPath ? path.resolve(targetPath) : path.resolve(__dirname, '../..')
   if (!fs.existsSync(absolutePath)) throw new Error('Path does not exist.')
+  if (targetPath && !isPathAllowed(absolutePath)) throw new Error('Access denied: path is outside allowed directories.')
   shell.showItemInFolder(absolutePath)
   return toVSCodeItem(absolutePath)
 })

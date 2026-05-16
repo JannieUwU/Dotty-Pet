@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useT } from '../../i18n'
-import { apiFetch, API_BASE } from '../../utils/api'
+import { apiFetch } from '../../utils/api'
 
 const API = '/resources'
 
@@ -54,6 +54,30 @@ const FileThumbnail = ({ file }: { file: FileItem }) => {
   const t = file.file_type.toLowerCase()
   const canThumb = t === 'pdf' || IMAGE_TYPES.has(t)
   const [thumbState, setThumbState] = useState<'loading' | 'ok' | 'fallback'>(canThumb ? 'loading' : 'fallback')
+  const [objectUrl, setObjectUrl] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!canThumb) return
+    let revoked = false
+    apiFetch(`/resources/files/${file.id}/thumb`)
+      .then(res => {
+        if (!res.ok) throw new Error('no thumb')
+        return res.blob()
+      })
+      .then(blob => {
+        if (revoked) return
+        const url = URL.createObjectURL(blob)
+        setObjectUrl(url)
+        setThumbState('ok')
+      })
+      .catch(() => {
+        if (!revoked) setThumbState('fallback')
+      })
+    return () => {
+      revoked = true
+      if (objectUrl) URL.revokeObjectURL(objectUrl)
+    }
+  }, [file.id])
 
   if (thumbState === 'fallback') {
     return <FileTypeIcon type={file.file_type} />
@@ -66,16 +90,16 @@ const FileThumbnail = ({ file }: { file: FileItem }) => {
           <FileTypeIcon type={file.file_type} />
         </div>
       )}
-      <img
-        src={`${API}/files/${file.id}/thumb`}
-        alt={file.name}
-        onLoad={() => setThumbState('ok')}
-        onError={() => setThumbState('fallback')}
-        style={{
-          width: 101, height: 101, objectFit: 'cover',
-          visibility: thumbState === 'ok' ? 'visible' : 'hidden',
-        }}
-      />
+      {objectUrl && (
+        <img
+          src={objectUrl}
+          alt={file.name}
+          style={{
+            width: 101, height: 101, objectFit: 'cover',
+            visibility: thumbState === 'ok' ? 'visible' : 'hidden',
+          }}
+        />
+      )}
     </div>
   )
 }
