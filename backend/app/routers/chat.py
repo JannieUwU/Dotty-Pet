@@ -38,8 +38,6 @@ def build_system() -> str:
 class ChatRequest(BaseModel):
     messages: list[dict]
     system: str = ""
-    provider: str = "ollama"
-    api_key: str = ""
     model: str = "qwen2.5"
 
 

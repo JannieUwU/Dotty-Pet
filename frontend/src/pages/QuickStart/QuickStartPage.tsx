@@ -258,8 +258,6 @@ export const QuickStartPage = () => {
           <p style={{ marginBottom: 10 }}>{qs.settings.intro}</p>
           <Sub title={qs.settings.aiTitle} />
           <Row label="Ollama" desc={qs.settings.ollama} />
-          <Row label="OpenAI" desc={qs.settings.openai} />
-          <Row label="Anthropic" desc={qs.settings.anthropic} />
           <Sub title={qs.settings.pomodoroTitle} />
           <Row label="Focus" desc={qs.settings.focusDur} />
           <Row label="Break" desc={qs.settings.breakDur} />

@@ -96,13 +96,6 @@ def _seed():
                       "VALUES (:uid, :k, :v, datetime('now'))"),
                 {"uid": DEFAULT_USER_ID, "k": k, "v": v}
             )
-        # Force-update AI provider/model to ollama regardless of existing value
-        for k, v in [("ai_provider", "ollama"), ("ai_model", "qwen2.5")]:
-            db.execute(
-                _text("UPDATE settings SET value=:v, updated_at=datetime('now') "
-                      "WHERE user_id=:uid AND key=:k"),
-                {"uid": DEFAULT_USER_ID, "k": k, "v": v}
-            )
         db.commit()
     finally:
         db.close()
