@@ -1,0 +1,30 @@
+<!--
+  IL2CPP code stripping preservation list.
+
+  VRMLoader.InjectComponentsFromPrefab uses System.Reflection to copy
+  MonoBehaviour components and inject Animator references at runtime.
+  Without this file, IL2CPP may strip the reflected types and methods,
+  causing silent failures in release builds.
+
+  Add any additional MonoBehaviour types used as component templates here.
+-->
+<linker>
+  <!-- Preserve all MonoBehaviour subclasses in the DottyPet scripts assembly -->
+  <assembly fullname="Assembly-CSharp">
+    <type fullname="VRMLoader" preserve="all"/>
+    <!-- Preserve all MonoBehaviours so reflection-based component injection works -->
+    <namespace fullname="" preserve="all"/>
+  </assembly>
+
+  <!-- Preserve reflection infrastructure -->
+  <assembly fullname="mscorlib">
+    <type fullname="System.Reflection.MethodInfo"   preserve="all"/>
+    <type fullname="System.Reflection.FieldInfo"    preserve="all"/>
+    <type fullname="System.Reflection.PropertyInfo" preserve="all"/>
+  </assembly>
+
+  <!-- VRM / UniGLTF runtime types accessed via reflection -->
+  <assembly fullname="UniVRM-0.x" preserve="all"/>
+  <assembly fullname="UniVRM10"   preserve="all"/>
+  <assembly fullname="UniGLTF"    preserve="all"/>
+</linker>
