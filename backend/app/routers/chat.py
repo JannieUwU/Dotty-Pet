@@ -3,10 +3,13 @@ from datetime import date
 import json
 from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from app.services.ai_service import get_backend
 
 router = APIRouter()
+
+_MAX_MESSAGES = 50        # frontend sends at most 20; 50 gives headroom
+_MAX_CONTENT_CHARS = 8000 # ~2000 tokens per message, well above normal use
 
 # ── Intent-aware system prompt ────────────────────────────────────────────────
 # {today} is replaced at request time with the current date.
@@ -39,6 +42,17 @@ class ChatRequest(BaseModel):
     messages: list[dict]
     system: str = ""
     model: str = "qwen2.5"
+
+    @field_validator("messages")
+    @classmethod
+    def validate_messages(cls, v: list[dict]) -> list[dict]:
+        if len(v) > _MAX_MESSAGES:
+            raise ValueError(f"Too many messages (max {_MAX_MESSAGES})")
+        for msg in v:
+            content = msg.get("content", "")
+            if isinstance(content, str) and len(content) > _MAX_CONTENT_CHARS:
+                raise ValueError(f"Message content too long (max {_MAX_CONTENT_CHARS} characters)")
+        return v
 
 
 @router.post("/")
