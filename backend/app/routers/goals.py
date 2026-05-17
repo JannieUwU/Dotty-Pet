@@ -2,11 +2,14 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import Optional
+import re
 from app.database.connection import get_db
 from app.database.models import Goal
 from app.dependencies import get_current_user_id
 
 router = APIRouter()
+
+_MONTH_RE = re.compile(r"^\d{4}-(?:0[1-9]|1[0-2])$")
 
 
 class GoalIn(BaseModel):
@@ -26,6 +29,8 @@ class GoalOut(GoalIn):
 def list_goals(month: Optional[str] = None, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     q = db.query(Goal).filter(Goal.user_id == user_id)
     if month:
+        if not _MONTH_RE.match(month):
+            raise HTTPException(400, "Invalid month format, expected YYYY-MM")
         q = q.filter(Goal.year_month == month)
     return q.order_by(Goal.sort_order, Goal.id).all()
 
