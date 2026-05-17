@@ -136,7 +136,6 @@ Dotty uses **Ollama** with `qwen2.5` by default. Switch providers in **Settings 
 | Provider | Setup |
 |---|---|
 | Ollama (local) | Install from [ollama.com](https://ollama.com), run `ollama pull qwen2.5` |
-| Anthropic Claude | Add your API key in Settings |
 
 ---
 
